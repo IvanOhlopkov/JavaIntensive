@@ -9,14 +9,14 @@ public class MyArrayListTests extends TestCase {
         myArrayListString = new MyArrayList<>();
     }
 
-    public void testAddMyArrayList() {
+    public void testAddList() {
         myArrayListString.add("Добавление строк");
         String expected = "Добавление строк";
         String actual = myArrayListString.get(0);
         assertEquals(expected, actual);
     }
 
-    public void testFirstMyArrayList() {
+    public void testFirstElement() {
         MyArrayList<Integer> firstElementList = new MyArrayList<>(10, 1);
         Integer expected = 1;
         Integer actual = firstElementList.get(0);
@@ -27,7 +27,7 @@ public class MyArrayListTests extends TestCase {
         assertEquals(expected, firstElementList.get(0));
     }
 
-    public void testResizeMyArrayList(){
+    public void testResizeList(){
         assertEquals(10, myArrayListString.getLength());
         myArrayListString.add("Первое значение");
         myArrayListString.add("Второе значение");
@@ -50,7 +50,7 @@ public class MyArrayListTests extends TestCase {
         assertEquals(10, myArrayListString.getLength());
     }
 
-    public void testRemoveMyArrayList() {
+    public void testRemoveElement() {
         myArrayListString.add("Это индекс ноль");
         myArrayListString.add("Это индекс один");
         myArrayListString.add("Это индекс два");

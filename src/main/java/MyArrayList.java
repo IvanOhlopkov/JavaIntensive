@@ -70,5 +70,6 @@ public class MyArrayList<T> {
         System.arraycopy(array, 0, newArray, 0, pointer);
         array = newArray;
     }
+
 }
 
