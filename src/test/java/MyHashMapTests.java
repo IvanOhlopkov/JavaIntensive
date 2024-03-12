@@ -1,4 +1,5 @@
 import junit.framework.TestCase;
+import mycollections.MyHashMap;
 
 public class MyHashMapTests extends TestCase {
 

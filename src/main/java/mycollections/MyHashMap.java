@@ -1,3 +1,4 @@
+package mycollections;
 
 public class MyHashMap<K, V> {
 
