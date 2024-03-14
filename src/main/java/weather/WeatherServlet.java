@@ -1,5 +1,7 @@
 package weather;
 
+
+import db.ConnectDB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,6 +13,7 @@ import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 import mycollections.MyHashMap;
@@ -20,13 +23,23 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 
-@WebServlet("/weather")
+@WebServlet(name = "WeatherServlet", urlPatterns = {"/weather"})
 public class WeatherServlet extends HttpServlet {
 
     private static final String API_KEY = "65ef04686a832111303907isnf459ab";
     private static final String WEATHER_OPTIONS = "temperature_2m";
     private static final String TIMEZONE = "Europe%2FMoscow";
     private static final String DAYS_FORECAST = "1";
+
+
+    @Override
+    public void init() throws ServletException {
+        try (var connection = ConnectDB.connect()) {
+            System.out.println("Connect to the PostgreSQL database.");
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -40,6 +53,7 @@ public class WeatherServlet extends HttpServlet {
         } catch (ParseException e) {
             e.getPosition();
         }
+
         req.setAttribute("city", city);
         req.setAttribute("temperatureNow", temperature);
         req.getRequestDispatcher("weather/weatheranswer.jsp").forward(req, resp);
