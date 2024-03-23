@@ -1,7 +1,6 @@
 package weather;
 
 
-import db.ConnectDB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,10 +12,16 @@ import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 import mycollections.MyHashMap;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -31,14 +36,9 @@ public class WeatherServlet extends HttpServlet {
     private static final String TIMEZONE = "Europe%2FMoscow";
     private static final String DAYS_FORECAST = "1";
 
-
     @Override
     public void init() throws ServletException {
-        try (var connection = ConnectDB.connect()) {
-            System.out.println("Connect to the PostgreSQL database.");
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
+
     }
 
     @Override
@@ -57,6 +57,20 @@ public class WeatherServlet extends HttpServlet {
         req.setAttribute("city", city);
         req.setAttribute("temperatureNow", temperature);
         req.getRequestDispatcher("weather/weatheranswer.jsp").forward(req, resp);
+
+        StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                .configure("hibernate.cfg.xml").build();
+        Metadata metadata = new MetadataSources(registry).getMetadataBuilder().build();
+        SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
+
+        Session session = sessionFactory.openSession();
+        Transaction transaction = session.beginTransaction();
+
+        City city1 = new City();
+        city1.setCity(city);
+        session.save(city1);
+        transaction.commit();
+        sessionFactory.close();
     }
 
 

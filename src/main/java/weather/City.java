@@ -1,10 +1,27 @@
 package weather;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "cities")
 public class City {
+
+    @Id
+    private int id;
     private String city;
     private String latitude;
     private String longitude;
     private String country;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getCity() {
         return city;
