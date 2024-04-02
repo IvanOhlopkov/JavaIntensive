@@ -1,9 +1,7 @@
-package weather;
+package weather.services;
 
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -15,66 +13,42 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 
 import mycollections.MyHashMap;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import weather.entity.City;
+import weather.repositories.CityRepository;
 
-
-@WebServlet(name = "WeatherServlet", urlPatterns = {"/weather"})
-public class WeatherServlet extends HttpServlet {
+@Service
+public class WeatherServiceImpl implements WeatherService {
 
     private static final String API_KEY = "65ef04686a832111303907isnf459ab";
     private static final String WEATHER_OPTIONS = "temperature_2m";
     private static final String TIMEZONE = "Europe%2FMoscow";
     private static final String DAYS_FORECAST = "1";
 
-    @Override
-    public void init() throws ServletException {
+    CityRepository cityRepository;
 
+    public WeatherServiceImpl(CityRepository cityRepository) {
+        this.cityRepository = cityRepository;
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String city = req.getParameter("city");
-        String temperature = null;
+    public String getTemp(String city) {
 
         try {
-            temperature = getTemp(city);
-        } catch (URISyntaxException | InterruptedException e) {
+            HttpResponse<String> responseWeather = getResponseWeather(city);
+            return parseJsonWeather(responseWeather.body());
+        } catch (ParseException | URISyntaxException | IOException | InterruptedException e) {
             throw new RuntimeException(e);
-        } catch (ParseException e) {
-            e.getPosition();
         }
-
-        req.setAttribute("city", city);
-        req.setAttribute("temperatureNow", temperature);
-        req.getRequestDispatcher("weather/weatheranswer.jsp").forward(req, resp);
-
-        StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-                .configure("hibernate.cfg.xml").build();
-        Metadata metadata = new MetadataSources(registry).getMetadataBuilder().build();
-        SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
-
-        Session session = sessionFactory.openSession();
-        Transaction transaction = session.beginTransaction();
-
-        City city1 = new City();
-        city1.setCity(city);
-        session.save(city1);
-        transaction.commit();
-        sessionFactory.close();
     }
 
+    private HttpResponse<String> getResponseWeather(String inputCity) throws URISyntaxException, IOException, InterruptedException, ParseException {
 
-    private String getTemp(String inputCity) throws URISyntaxException, IOException, InterruptedException, ParseException {
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
                 .build();
@@ -99,11 +73,10 @@ public class WeatherServlet extends HttpServlet {
                         "&timezone=" + TIMEZONE +
                         "&forecast_days=" + DAYS_FORECAST))
                 .build();
+        cityRepository.save(city);
 
-        HttpResponse<String> responseWeather = client
+        return client
                 .send(requestWeatherForecast, HttpResponse.BodyHandlers.ofString());
-
-        return parseJsonWeather(responseWeather.body());
     }
 
     private City parseJsonLatitudeLongitude(String body) throws ParseException {
@@ -143,10 +116,11 @@ public class WeatherServlet extends HttpServlet {
 
 
         for (int i = 0; i < 24; i++) {
-            myHashMap.put(jsonArrayTime.get(i).toString(), jsonArrayTemperature.get(i).toString());
+            myHashMap.put(jsonArrayTime.get(i).toString(),jsonArrayTemperature.get(i).toString());
         }
 
         return myHashMap.get(timeForm);
     }
+
 
 }

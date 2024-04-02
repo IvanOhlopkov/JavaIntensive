@@ -1,18 +1,23 @@
-package weather;
+package weather.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "cities")
 public class City {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "city")
     private String city;
+    @Column(name = "latitude")
     private String latitude;
+    @Column(name = "longitude")
     private String longitude;
+    @Column(name = "country")
     private String country;
 
     public int getId() {
